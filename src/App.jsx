@@ -36,9 +36,7 @@ import EditApplication from "./Components/User/Application/EditApplication"
 import AddApplication from "./Components/User/Application/AddApplication"
 import ViewResult from "./Components/User/Result/ViewResult"
 import ViewHackathon from "./Components/User/Hackathon/ViewHackathon"
-
-
-
+import Profile from "./Components/User/Profile/Profile"
 function App() {
 
 
@@ -80,7 +78,7 @@ function App() {
       <Route path='AddApplication'element={<AddApplication/>}/>
       <Route path="Application/EditApplication/:id"element={<EditApplication/>}/>
       <Route path="ViewResult"element={<ViewResult/>}/>
-      
+      <Route path="Profile"element={<Profile/>}/>
      </Route>
 
     </Routes>

@@ -1,5 +1,9 @@
 import { Link } from "react-router-dom"
 import ResultServices from "../../../Services/ResultServices"
+import ApplicationServices from "../../../Services/ApplicationServices"
+import StudentServices from "../../../Services/StudentServices"
+import InternshipServices from "../../../Services/InternshipServices"
+import HackathonServices from "../../../Services/HackathonServices"
 import { useEffect, useState } from "react"
 import Swal from 'sweetalert2'
 import { toast } from "react-toastify"
@@ -14,14 +18,29 @@ const override = {
 export default function ManageResult() {
     let [loading, setLoading] = useState(false)
     const [Result, setResult] = useState([])
+    const [applications, setApplications] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [internships, setInternships] = useState([]);
+    const [hackathons, setHackathons] = useState([]);
+    
     async function getResult() {
         try {
             setLoading(true);
 
-            const res = await ResultServices.all();
+            const [res, appRes, userRes, intRes, hackRes] = await Promise.all([
+                ResultServices.all(),
+                ApplicationServices.all(),
+                StudentServices.all(),
+                InternshipServices.all(),
+                HackathonServices.all()
+            ]);
             console.log("response:", res);
 
             setResult(res);
+            setApplications(appRes);
+            setUsers(userRes);
+            setInternships(intRes);
+            setHackathons(hackRes);
         } catch (error) {
             console.log(error);
             toast.error("Failed to load result");
@@ -105,7 +124,7 @@ export default function ManageResult() {
                                 <thead>
                                     <tr>
                                         <th scope="col">Sr.No.</th>
-                                        <th scope="col">ApplicationId</th>
+                                        <th scope="col">Application</th>
                                         <th scope="col">Result</th>
                                         <th scope="col">Remarks</th>
                                         <th scope="col">PublishedAt</th>
@@ -120,7 +139,20 @@ export default function ManageResult() {
                                                 <p className="mb-0 mt-4">{index + 1}</p>
                                             </td>
                                             <td>
-                                                <p className="mb-0 mt-4">{Result.applicationId}</p>
+                                                <p className="mb-0 mt-4">
+                                                    {(() => {
+                                                        const app = applications.find(a => a.id === Result.applicationId);
+                                                        if (!app) return Result.applicationId;
+                                                        const userName = users.find(u => u.id === app.userId)?.name || "Unknown User";
+                                                        let programName = "";
+                                                        if (app.internshipId) {
+                                                            programName = "Internship: " + (internships.find(i => i.id === app.internshipId)?.title || "Unknown");
+                                                        } else if (app.hackathonId) {
+                                                            programName = "Hackathon: " + (hackathons.find(h => h.id === app.hackathonId)?.title || "Unknown");
+                                                        }
+                                                        return `${userName} - ${programName}`;
+                                                    })()}
+                                                </p>
                                             </td>
                                             <td>
                                                 <p className="mb-0 mt-4">{Result.result}</p>

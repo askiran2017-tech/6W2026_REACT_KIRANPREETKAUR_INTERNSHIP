@@ -31,7 +31,7 @@ export default function Login() {
       toast.success("Login Successful");
       setLoading(false);
 
-      if (res.userType == 'Admin') {
+      if (res.userType == 'admin') {
         nav('/admin')
       } else {
         nav('/')

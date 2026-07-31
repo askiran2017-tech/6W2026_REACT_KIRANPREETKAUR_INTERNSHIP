@@ -4,13 +4,38 @@ import { useEffect, useState } from "react"
 import Swal from 'sweetalert2'
 import { toast } from "react-toastify"
 
+import AuthServices from "../../../Services/AuthServices"
+import ApplicationServices from "../../../Services/ApplicationServices"
+import InternshipServices from "../../../Services/InternshipServices"
+import HackathonServices from "../../../Services/HackathonServices"
+
 export default function ViewResult() {
 
   const [Result, setResult] = useState([])
+  const [applications, setApplications] = useState([])
+  const [internships, setInternships] = useState([])
+  const [hackathons, setHackathons] = useState([])
+
   async function getResult() {
-    let res = await ResultServices.all()
-    console.log("response:", res)
-    setResult(res)
+    const currentUserId = AuthServices.getId();
+    if (!currentUserId) return;
+
+    const [res, appRes, intRes, hackRes] = await Promise.all([
+      ResultServices.all(),
+      ApplicationServices.all(),
+      InternshipServices.all(),
+      HackathonServices.all()
+    ]);
+
+    // Filter results to only show the logged-in user's results
+    const userApps = appRes.filter(app => app.userId === currentUserId);
+    const userAppIds = userApps.map(app => app.id);
+    const userResults = res.filter(r => userAppIds.includes(r.applicationId));
+
+    setResult(userResults);
+    setApplications(userApps);
+    setInternships(intRes);
+    setHackathons(hackRes);
   }
   useEffect(() => {
     getResult()
@@ -54,7 +79,16 @@ export default function ViewResult() {
 
                 <div className="card-body">
                   <h4 className="card-title text-primary fw-bold ">
-                    {item.applicationId}
+                    {(() => {
+                        const app = applications.find(a => a.id === item.applicationId);
+                        if (!app) return "Unknown Application";
+                        if (app.internshipId) {
+                            return "Internship: " + (internships.find(i => i.id === app.internshipId)?.title || "Unknown");
+                        } else if (app.hackathonId) {
+                            return "Hackathon: " + (hackathons.find(h => h.id === app.hackathonId)?.title || "Unknown");
+                        }
+                        return "Unknown Program";
+                    })()}
                   </h4>
                   <hr />
                   <p>
@@ -68,8 +102,8 @@ export default function ViewResult() {
                   </p>
                  
 
-                  <button className="btn btn-success w-100">
-                    Result
+                  <button className="btn btn-success w-100 disabled">
+                    {item.result}
                   </button>
                 </div>
 

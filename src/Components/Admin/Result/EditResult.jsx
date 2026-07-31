@@ -3,6 +3,11 @@ import { useState, useEffect } from "react"
 import { toast } from "react-toastify";
 
 import ResultServices from "../../../Services/ResultServices"
+import ApplicationServices from "../../../Services/ApplicationServices"
+import StudentServices from "../../../Services/StudentServices"
+import InternshipServices from "../../../Services/InternshipServices"
+import HackathonServices from "../../../Services/HackathonServices"
+
 export default function EditResult() {
     const [ApplicationId, setApplicationId] = useState("");
     const [Result, setResult] = useState("");
@@ -12,6 +17,31 @@ export default function EditResult() {
 
     const params = useParams()
     const navigate = useNavigate();
+
+    const [applications, setApplications] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [internships, setInternships] = useState([]);
+    const [hackathons, setHackathons] = useState([]);
+
+    useEffect(() => {
+        async function fetchData() {
+            try {
+                const [appRes, userRes, intRes, hackRes] = await Promise.all([
+                    ApplicationServices.all(),
+                    StudentServices.all(),
+                    InternshipServices.all(),
+                    HackathonServices.all()
+                ]);
+                setApplications(appRes);
+                setUsers(userRes);
+                setInternships(intRes);
+                setHackathons(hackRes);
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        }
+        fetchData();
+    }, []);
 
 
     async function updateResult(e) {
@@ -75,12 +105,27 @@ export default function EditResult() {
             <div className="container d-flex justify-content-center  mt-5">
                 <form onSubmit={updateResult} style={{ width: 800 }}>
 
-                    <input
-                        type="text"
-                        className=" form-control border-0 py-3 mb-4"
-                        placeholder="Enter applicationId" value={ApplicationId}
+                    <select
+                        className="form-select border-0 py-3 mb-4"
+                        value={ApplicationId}
                         onChange={(e) => setApplicationId(e.target.value)}
-                    />
+                    >
+                        <option value="">Select Application</option>
+                        {applications.map(app => {
+                            const userName = users.find(u => u.id === app.userId)?.name || "Unknown User";
+                            let programName = "";
+                            if (app.internshipId) {
+                                programName = "Internship: " + (internships.find(i => i.id === app.internshipId)?.title || "Unknown");
+                            } else if (app.hackathonId) {
+                                programName = "Hackathon: " + (hackathons.find(h => h.id === app.hackathonId)?.title || "Unknown");
+                            }
+                            return (
+                                <option key={app.id} value={app.id}>
+                                    {userName} - {programName}
+                                </option>
+                            );
+                        })}
+                    </select>
                     <select
                         className="w-100 form-control border-0 py-3 mb-4" value={Result}
                         onChange={(e) => setResult(e.target.value)}

@@ -17,6 +17,9 @@ class AuthServices {
     getEmail(){
         return localStorage.getItem("email")
     }
+    getId(){
+        return localStorage.getItem("id")
+    }
      getUserType() {
         return localStorage.getItem("userType");
     }

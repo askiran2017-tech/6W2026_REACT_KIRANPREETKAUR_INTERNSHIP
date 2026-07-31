@@ -1,37 +1,51 @@
 import { Link } from "react-router-dom"
 import ApplicationServices from "../../../Services/ApplicationServices"
+import InternshipServices from "../../../Services/InternshipServices"
+import HackathonServices from "../../../Services/HackathonServices"
+import StudentServices from "../../../Services/StudentServices"
 import { useEffect, useState } from "react"
 import Swal from 'sweetalert2'
 import { toast } from "react-toastify"
 import { RiseLoader } from "react-spinners"
+
 const override = {
     display: "block",
     margin: "0 auto",
     borderColor: "red",
 };
 
-
 export default function ViewApplication1() {
   let [loading, setLoading] = useState(false)
   const [Application, setApplication] = useState([])
-   async function getApplication() {
-          try {
-              setLoading(true);
-  
-              const res = await ApplicationServices.all();
-              console.log("response:", res);
-  
-              setApplication(res);
-          } catch (error) {
-              console.log(error);
-              toast.error("Failed to load application");
-          } finally {
-              setLoading(false);
-          }
+  const [users, setUsers] = useState([])
+  const [internships, setInternships] = useState([])
+  const [hackathons, setHackathons] = useState([])
+
+  async function getApplication() {
+      try {
+          setLoading(true);
+          const [res, usersRes, intRes, hackRes] = await Promise.all([
+              ApplicationServices.all(),
+              StudentServices.all(),
+              InternshipServices.all(),
+              HackathonServices.all()
+          ]);
+          setApplication(res);
+          setUsers(usersRes);
+          setInternships(intRes);
+          setHackathons(hackRes);
+      } catch (error) {
+          console.log(error);
+          toast.error("Failed to load application data");
+      } finally {
+          setLoading(false);
       }
+  }
+
   useEffect(() => {
     getApplication()
   }, [])
+
   async function deleteApplication(id) {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -44,134 +58,118 @@ export default function ViewApplication1() {
     })
     if (result.isConfirmed) {
       await ApplicationServices.deleteApplication(id)
-      await Swal.fire({
-        title: "Deleted!",
-        text: "Your file has been deleted.",
-        icon: "success"
-      });
-      toast.success("Application deleted successfully")
+      Swal.fire("Deleted!", "Application deleted.", "success");
       getApplication()
     }
+  }
+
+  async function updateStatus(id, status) {
+      try {
+          await ApplicationServices.update(id, { applicationStatus: status, updatedAt: new Date() });
+          toast.success(`Application marked as ${status}`);
+          getApplication();
+      } catch (err) {
+          toast.error("Failed to update status");
+      }
+  }
+
+  async function scheduleInterview(id) {
+      const { value: formValues } = await Swal.fire({
+        title: "Schedule Interview",
+        html:
+          '<input id="swal-input1" class="swal2-input" type="date">' +
+          '<input id="swal-input2" class="swal2-input" type="time">',
+        focusConfirm: false,
+        preConfirm: () => {
+          return [
+            document.getElementById("swal-input1").value,
+            document.getElementById("swal-input2").value
+          ];
+        }
+      });
+      if (formValues && formValues[0] && formValues[1]) {
+          try {
+              await ApplicationServices.update(id, {
+                  interviewDate: formValues[0],
+                  interviewTime: formValues[1],
+                  applicationStatus: "Interview Scheduled",
+                  updatedAt: new Date()
+              });
+              toast.success("Interview scheduled successfully!");
+              getApplication();
+          } catch (err) {
+              toast.error("Failed to schedule interview.");
+          }
+      }
   }
 
   return (
     <>
       <div className="container-xxl py-5 bg-dark page-header mb-5">
         <div className="container my-5 ">
-
-          <h1 className="display-3 text-white mb-3 animated slideInDown">Application</h1>
-          <nav aria-label="breadcrumb">
-            <ol className="breadcrumb text-uppercase">
-              <li className="breadcrumb-item">
-                <Link to="#">Home</Link>
-              </li>
-              <li className="breadcrumb-item">
-                <Link to="#">Pages</Link>
-              </li>
-              <li className="breadcrumb-item text-white active" aria-current="page">
-                Application
-              </li>
-            </ol>
-          </nav>
-
-        </div>
-      </div>
-
-      <div className="container ">
-        <div className="container d-flex justify-content-between mt-5">
-          <h1 className="text-success"> Application List</h1>
-          
+          <h1 className="display-3 text-white mb-3 animated slideInDown">Manage Applications</h1>
         </div>
       </div>
 
       <div className="container-fluid py-5">
         <div className="container py-5">
-          {loading ? (<RiseLoader
-                        color={"#0de114"}
-                        loading={loading}
-                        cssOverride={override}
-                        size={100}
-                        aria-label="Loading Spinner"
-                        data-testid="loader" />) : (
+          {loading ? (<RiseLoader color={"#0de114"} cssOverride={override} size={100} />) : (
           <div className="table-responsive">
-            <table className="table">
-              <thead>
+            <table className="table table-bordered table-hover align-middle">
+              <thead className="table-dark">
                 <tr>
-                  <th scope="col">Sr.No.</th>
-                  <th scope="col">UserId</th>
-                  <th scope="col">InternshipId</th>
-                  <th scope="col">HackathonId</th>
-                  <th scope="col">SubmissionUrl</th>
-                  <th scope="col">InterviewDate</th>
-                  <th scope="col">InterviewTime</th>
-                  <th scope="col">ApplicationStatus</th>
-                  <th scope="col">CreatedAt</th>
-                  <th scope="col">updatedAt</th>
+                  <th scope="col">User</th>
+                  <th scope="col">Type / Title</th>
+                  <th scope="col">Submission URL</th>
+                  <th scope="col">Interview</th>
+                  <th scope="col">Status</th>
                   <th scope="col">Actions</th>
-
                 </tr>
               </thead>
               <tbody>
-                {Application.map((Application, index) => (
-                  <tr key={Application.id}>
-
+                {Application.map((app) => (
+                  <tr key={app.id}>
+                    <td><small>{users.find(u => u.id === app.userId)?.name || app.userId}</small></td>
                     <td>
-                      <p className="mb-0 mt-4">{index + 1}</p>
+                      {app.internshipId ? (
+                         <span className="badge bg-success">Internship: {internships.find(i => i.id === app.internshipId)?.title || app.internshipId}</span>
+                      ) : (
+                         <span className="badge bg-warning text-dark">Hackathon: {hackathons.find(h => h.id === app.hackathonId)?.title || app.hackathonId}</span>
+                      )}
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.userId}</p>
+                      {app.submissionUrl ? (
+                         <a href={app.submissionUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">View</a>
+                      ) : "N/A"}
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.internshipId}</p>
+                      {app.interviewDate ? (
+                          <div>
+                              <strong>Date:</strong> {app.interviewDate}<br/>
+                              <strong>Time:</strong> {app.interviewTime}
+                          </div>
+                      ) : "Not Scheduled"}
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.hackathonId}</p>
-                    </td><td>
-                    <Link
-                      to={Application.submissionUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                     Submit Now
-                    </Link></td>
-                    <td>
-                      <p className="mb-0 mt-4">{Application.interviewDate}</p>
+                      <span className={`badge ${app.applicationStatus === 'Approved' ? 'bg-success' : app.applicationStatus === 'Rejected' ? 'bg-danger' : 'bg-secondary'}`}>
+                          {app.applicationStatus || 'Pending'}
+                      </span>
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.interviewTime}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Application.applicationStatus}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Application.createdAt.toDate().toLocaleDateString()}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Application.updatedAt.toDate().toLocaleDateString()}</p>
-                    </td>
-
-                    <td>
-                      <Link to={`/Application/EditApplication/${Application.id}`}>
-                        <button className="btn btn-md rounded-circle bg-light border mt-4">
-                          <i className="bi bi-pencil text-success" />
-                        </button>
-                      </Link>
-                      &nbsp;
-                      <button className="btn btn-md rounded-circle bg-light border mt-4"
-                        onClick={() => deleteApplication(Application.id)}>
-                        <i className="bi bi-trash text-danger" />
-                      </button>
+                      <div className="d-flex flex-column gap-2">
+                          <button className="btn btn-sm btn-success" onClick={() => updateStatus(app.id, 'Approved')}>Approve</button>
+                          <button className="btn btn-sm btn-danger" onClick={() => updateStatus(app.id, 'Rejected')}>Reject</button>
+                          <button className="btn btn-sm btn-info text-white" onClick={() => scheduleInterview(app.id)}>Schedule Interview</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => deleteApplication(app.id)}>Delete</button>
+                      </div>
                     </td>
                   </tr>
-
                 ))}
               </tbody>
             </table>
           </div>)}
-
         </div>
       </div>
-
     </>
   )
 }

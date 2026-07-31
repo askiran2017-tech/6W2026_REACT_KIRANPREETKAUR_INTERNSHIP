@@ -17,7 +17,7 @@ export default function AdminLayout(){
     useEffect(() => {
 const email=getEmail()
         const UserType=getUserType()
-        if (UserType!=='Admin'||email==null){
+        if (UserType!=='admin'||email==null){
             toast.error('unauthorized')
         nav('/')}
 }, []);

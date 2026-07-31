@@ -1,37 +1,53 @@
 import { Link } from "react-router-dom"
 import ApplicationServices from "../../../Services/ApplicationServices"
+import InternshipServices from "../../../Services/InternshipServices"
+import HackathonServices from "../../../Services/HackathonServices"
+import AuthServices from "../../../Services/AuthServices"
 import { useEffect, useState } from "react"
 import Swal from 'sweetalert2'
 import { toast } from "react-toastify"
 import { RingLoader } from "react-spinners"
+
 const override = {
     display: "block",
     margin: "0 auto",
     borderColor: "red",
 };
 
-
 export default function ManageApplication() {
   const [Application, setApplication] = useState([])
+  const [internships, setInternships] = useState([])
+  const [hackathons, setHackathons] = useState([])
   let [loading, setLoading] = useState(false)
-   async function getApplication() {
-          try {
-              setLoading(true);
-  
-              const res = await ApplicationServices.all();
-              console.log("response:", res);
-  
-              setApplication(res);
-          } catch (error) {
-              console.log(error);
-              toast.error("Failed to load application");
-          } finally {
-              setLoading(false);
-          }
+
+  async function getApplication() {
+      try {
+          setLoading(true);
+          const currentUserId = AuthServices.getId();
+          if (!currentUserId) return;
+
+          const [res, intRes, hackRes] = await Promise.all([
+              ApplicationServices.all(),
+              InternshipServices.all(),
+              HackathonServices.all()
+          ]);
+          
+          const userApps = res.filter(app => app.userId === currentUserId);
+          setApplication(userApps);
+          setInternships(intRes);
+          setHackathons(hackRes);
+      } catch (error) {
+          console.log(error);
+          toast.error("Failed to load application");
+      } finally {
+          setLoading(false);
       }
+  }
+
   useEffect(() => {
     getApplication()
   }, [])
+
   async function deleteApplication(id) {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -44,141 +60,98 @@ export default function ManageApplication() {
     })
     if (result.isConfirmed) {
       await ApplicationServices.deleteApplication(id)
-      await Swal.fire({
-        title: "Deleted!",
-        text: "Your file has been deleted.",
-        icon: "success"
-      });
-      toast.success("Application deleted successfully")
+      Swal.fire("Deleted!", "Your application has been deleted.", "success");
       getApplication()
     }
+  }
+
+  async function submitProject(id) {
+      const { value: url } = await Swal.fire({
+        title: "Submit Project URL",
+        input: "url",
+        inputLabel: "Your project or resume link",
+        inputPlaceholder: "Enter the URL"
+      });
+      if (url) {
+          try {
+              await ApplicationServices.update(id, { submissionUrl: url, updatedAt: new Date() });
+              toast.success("Project submitted successfully!");
+              getApplication();
+          } catch (err) {
+              toast.error("Failed to submit project.");
+          }
+      }
   }
 
   return (
     <>
       <div className="container-xxl py-5 bg-dark page-header mb-5">
         <div className="container my-5 ">
-
-          <h1 className="display-3 text-white mb-3 animated slideInDown">Application</h1>
-          <nav aria-label="breadcrumb">
-            <ol className="breadcrumb text-uppercase">
-              <li className="breadcrumb-item">
-                <Link to="#">Home</Link>
-              </li>
-              <li className="breadcrumb-item">
-                <Link to="#">Pages</Link>
-              </li>
-              <li className="breadcrumb-item text-white active" aria-current="page">
-                Application
-              </li>
-            </ol>
-          </nav>
-
-        </div>
-      </div>
-
-      <div className="container ">
-        <div className="container d-flex justify-content-between mt-5">
-          <h1 className="text-success"> Application List</h1>
-          <Link to='/AddApplication'>
-            <button
-              className="btn border-secondary py-3 bg-success text-white  "
-              type="submit"
-            >
-              <i className="bi bi-plus"></i>
-              Add Application List
-            </button>
-          </Link>
-
+          <h1 className="display-3 text-white mb-3 animated slideInDown">My Applications</h1>
         </div>
       </div>
 
       <div className="container-fluid py-5">
         <div className="container py-5">
-          {loading ? (<RingLoader
-                        color={"#0de114"}
-                        loading={loading}
-                        cssOverride={override}
-                        size={100}
-                        aria-label="Loading Spinner"
-                        data-testid="loader" />) : (
+          {loading ? (<RingLoader color={"#0de114"} cssOverride={override} size={100} />) : (
           <div className="table-responsive">
-            <table className="table">
-              <thead>
+            <table className="table table-bordered table-hover align-middle">
+              <thead className="table-dark">
                 <tr>
-                  <th scope="col">Sr.No.</th>
-                  <th scope="col">UserId</th>
-                  <th scope="col">InternshipId</th>
-                  <th scope="col">HackathonId</th>
-                  <th scope="col">SubmissionUrl</th>
-                  <th scope="col">InterviewDate</th>
-                  <th scope="col">InterviewTime</th>
-                  <th scope="col">ApplicationStatus</th>
+                  <th scope="col">Type / Title</th>
+                  <th scope="col">Submission URL</th>
+                  <th scope="col">Interview</th>
+                  <th scope="col">Status</th>
                   <th scope="col">Date</th>
-                  
                   <th scope="col">Actions</th>
-
                 </tr>
               </thead>
               <tbody>
-                {Application.map((Application, index) => (
-                  <tr key={Application.id}>
-
+                {Application.map((app) => (
+                  <tr key={app.id}>
                     <td>
-                      <p className="mb-0 mt-4">{index + 1}</p>
+                      {app.internshipId ? (
+                         <span className="badge bg-success">Internship: {internships.find(i => i.id === app.internshipId)?.title || app.internshipId}</span>
+                      ) : (
+                         <span className="badge bg-warning text-dark">Hackathon: {hackathons.find(h => h.id === app.hackathonId)?.title || app.hackathonId}</span>
+                      )}
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.userId}</p>
+                      {app.submissionUrl ? (
+                         <a href={app.submissionUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">View Submitted Link</a>
+                      ) : (
+                         <button className="btn btn-sm btn-info text-white" onClick={() => submitProject(app.id)}>Submit Link</button>
+                      )}
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.internshipId}</p>
+                      {app.interviewDate ? (
+                          <div>
+                              <strong>Date:</strong> {app.interviewDate}<br/>
+                              <strong>Time:</strong> {app.interviewTime}
+                          </div>
+                      ) : "Not Scheduled"}
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.hackathonId}</p>
-                    </td><td>
-                    <Link
-                      to={Application.submissionUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                     Submit Now
-                    </Link></td>
-                    <td>
-                      <p className="mb-0 mt-4">{Application.interviewDate}</p>
+                      <span className={`badge ${app.applicationStatus === 'Approved' ? 'bg-success' : app.applicationStatus === 'Rejected' ? 'bg-danger' : 'bg-secondary'}`}>
+                          {app.applicationStatus || 'Pending'}
+                      </span>
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.interviewTime}</p>
+                      <small>Applied: {app.createdAt?.toDate().toLocaleDateString()}</small><br/>
+                      <small>Updated: {app.updatedAt?.toDate().toLocaleDateString()}</small>
                     </td>
                     <td>
-                      <p className="mb-0 mt-4">{Application.applicationStatus}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Application.createdAt.toDate().toLocaleDateString()}</p>
-                      <p className="mb-0 mt-4">{Application.updatedAt.toDate().toLocaleDateString()}</p>
-                    </td>
-
-                    <td>
-                      <Link to={`/Application/EditApplication/${Application.id}`}>
-                        <button className="btn btn-md rounded-circle bg-light border mt-4">
-                          <i className="bi bi-pencil text-success" />
-                        </button>
-                      </Link>
-                      &nbsp;
-                      <button className="btn btn-md rounded-circle bg-light border mt-4"
-                        onClick={() => deleteApplication(Application.id)}>
-                        <i className="bi bi-trash text-danger" />
+                      <button className="btn btn-sm btn-outline-danger" onClick={() => deleteApplication(app.id)}>
+                        Cancel
                       </button>
                     </td>
                   </tr>
-
                 ))}
               </tbody>
             </table>
           </div>)}
-
         </div>
       </div>
-
     </>
   )
 }

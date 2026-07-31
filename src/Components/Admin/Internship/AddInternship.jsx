@@ -1,8 +1,10 @@
 import { Link, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "react-toastify";
 
 import InternshipServices from "../../../Services/InternshipServices"
+import CategoryServices from "../../../Services/CategoryServices"
+
 export default function AddInternship() {
     const [CategoryId, setCategoryId] = useState("");
     const [CompanyName, setCompanyName] = useState("");
@@ -14,7 +16,19 @@ export default function AddInternship() {
     const [LastDate, setLastDate] = useState("");
     const navigate = useNavigate();
 
+    const [categories, setCategories] = useState([]);
 
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const res = await CategoryServices.all();
+                setCategories(res);
+            } catch (err) {
+                console.error("Error fetching categories:", err);
+            }
+        }
+        fetchCategories();
+    }, []);
     async function AddInternship(e) {
         e.preventDefault()
         try {
@@ -70,12 +84,16 @@ export default function AddInternship() {
                 <form onSubmit={AddInternship} style={{ width: 800 }}>
                     <div className="row">
                         <div className="col-md-6">
-                            <input
-                                type="text"
-                                className=" form-control border-0 py-3 mb-4"
-                                placeholder="Enter categoryId" value={CategoryId}
+                            <select 
+                                className="form-select border-0 py-3 mb-4"
+                                value={CategoryId}
                                 onChange={(e) => setCategoryId(e.target.value)}
-                            /></div>
+                            >
+                                <option value="">Select Category</option>
+                                {categories.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select></div>
                         <div className="col-md-6">
                             <input
                                 type="text"

@@ -1,8 +1,10 @@
 import { Link, useNavigate } from "react-router-dom"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { toast } from "react-toastify";
 
 import HackathonServices from "../../../Services/HackathonServices"
+import CategoryServices from "../../../Services/CategoryServices"
+
 export default function AddHackathon() {
     const [CategoryId, setCategoryId] = useState("");
     const [Title, setTitle] = useState("");
@@ -12,6 +14,20 @@ export default function AddHackathon() {
     const [LastDate, setLastDate] = useState("");
     const [Prize, setPrize] = useState("");
     const navigate = useNavigate();
+
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            try {
+                const res = await CategoryServices.all();
+                setCategories(res);
+            } catch (err) {
+                console.error("Error fetching categories:", err);
+            }
+        }
+        fetchCategories();
+    }, []);
 
 
     async function AddHackathon(e) {
@@ -68,12 +84,16 @@ export default function AddHackathon() {
                 <form onSubmit={AddHackathon} style={{ width: 800 }}>
                     <div className="row">
                         <div className="col-md-6">
-                            <input
-                                type="text"
-                                className=" form-control border-0 py-3 mb-4"
-                                placeholder="Enter categoryId" value={CategoryId}
+                            <select 
+                                className="form-select border-0 py-3 mb-4"
+                                value={CategoryId}
                                 onChange={(e) => setCategoryId(e.target.value)}
-                            /></div>
+                            >
+                                <option value="">Select Category</option>
+                                {categories.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select></div>
                             <div className="col-md-6">
                             <input
                                 type="text"

@@ -4,14 +4,19 @@ import { useEffect, useState } from "react"
 import Swal from 'sweetalert2'
 import { toast } from "react-toastify"
 import ApplicationServices from "../../../Services/ApplicationServices";
+import AuthServices from "../../../Services/AuthServices";
+import CategoryServices from "../../../Services/CategoryServices";
 
 export default function ViewInternship() {
 
   const [Internship, setInternship] = useState([])
+  const [categories, setCategories] = useState([])
   async function getInternship() {
     let res = await InternshipServices.all()
+    let catRes = await CategoryServices.all()
     console.log("response:", res)
     setInternship(res)
+    setCategories(catRes)
   }
   useEffect(() => {
     getInternship()
@@ -26,26 +31,33 @@ export default function ViewInternship() {
       const [ApplicationStatus, setApplicationStatus] = useState("");
       const navigate = useNavigate();
   
-  
       async function AddApplication(internshipId) {
-        console.log("id:", internshipId)
         try {
-              let payload = {
-                  userId: UserId,
-                  internshipId: internshipId,
-                  submissionUrl: SubmissionUrl,
-                  createdAt: Date.now(),
+              const currentUserId = AuthServices.getId();
+              if (!currentUserId) {
+                  toast.error("Please login first to apply!");
+                  navigate("/");
+                  return;
               }
-              console.log("Payload:", payload);
+              let payload = {
+                  userId: currentUserId,
+                  internshipId: internshipId,
+                  hackathonId: "",
+                  submissionUrl: "",
+                  interviewDate: "",
+                  interviewTime: "",
+                  applicationStatus: "Pending",
+                  createdAt: new Date(),
+                  updatedAt: new Date()
+              }
               await ApplicationServices.add(payload)
-              toast.success("Application added");
+              toast.success("Successfully applied for Internship!");
               navigate("/ManageApplication");
           } catch (err) {
               console.log("error:", err)
-              toast.error("error adding Application")
+              toast.error("Error applying for Internship")
           }
       }
-  
 
   return (
     <>
@@ -94,7 +106,7 @@ export default function ViewInternship() {
               <strong>Description:</strong>  {item.description}
             </p>
             <p>
-              <strong>Category:</strong> {item.categoryId}
+              <strong>Category:</strong> {categories.find(c => c.id === item.categoryId)?.name || item.categoryId}
             </p>
 
             <p>

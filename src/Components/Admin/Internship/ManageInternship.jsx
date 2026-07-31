@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import InternshipServices from "../../../Services/InternshipServices"
+import CategoryServices from "../../../Services/CategoryServices"
 import { useEffect, useState } from "react"
 import Swal from 'sweetalert2'
 import { toast } from "react-toastify"
@@ -16,15 +17,18 @@ export default function ManageInternship() {
   
 
   const [Internship, setInternship] = useState([])
+  const [categories, setCategories] = useState([])
   
   async function getInternship() {
   try {
     setLoading(true);
 
     const res = await InternshipServices.all();
+    const catRes = await CategoryServices.all();
     console.log("response:", res);
 
     setInternship(res);
+    setCategories(catRes);
   } catch (error) {
     console.log(error);
     toast.error("Failed to load internships");
@@ -110,7 +114,7 @@ export default function ManageInternship() {
                 <thead>
                   <tr>
                     <th scope="col">Sr.No.</th>
-                    <th scope="col">CategoryId</th>
+                    <th scope="col">Category</th>
                     <th scope="col">CompanyName</th>
                     <th scope="col">Title</th>
                     <th scope="col">Description</th>
@@ -131,7 +135,9 @@ export default function ManageInternship() {
                         <p className="mb-0 mt-4">{index + 1}</p>
                       </td>
                       <td>
-                        <p className="mb-0 mt-4">{Internship.categoryId}</p>
+                        <p className="mb-0 mt-4">
+                          {categories.find(c => c.id === Internship.categoryId)?.name || Internship.categoryId}
+                        </p>
                       </td>
                       <td>
                         <p className="mb-0 mt-4">{Internship.companyName}</p>

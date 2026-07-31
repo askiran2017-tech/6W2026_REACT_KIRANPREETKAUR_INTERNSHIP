@@ -6,7 +6,7 @@ const uploadUrl= "https://api.cloudinary.com/v1_1/psj15wto/image/upload";
 class CloudinaryServices{
     async upload(profileImage){
         const formData=new FormData()
-        formData.appenda("file", profileImage);
+        formData.append("file", profileImage);
         formData.append('upload_preset',upload_preset)
         const result=await axios.post(uploadUrl,formData);
         console.log(result.data);
