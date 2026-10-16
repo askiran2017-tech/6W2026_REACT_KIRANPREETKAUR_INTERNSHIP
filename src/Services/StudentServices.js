@@ -1,8 +1,6 @@
 import { addDoc, collection, getDocs, getDoc, updateDoc,doc, deleteDoc } from "firebase/firestore";
 import StudentModel from "../Model/StudentModel";
 import { db } from "../Firebase/FirebaseConfig";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
 
 class StudentServices {
    async add(data) {
@@ -13,7 +11,7 @@ class StudentServices {
     newStudent.phone = data.phone;
     newStudent.address = data.address;
     newStudent.profileImage = data.profileImage;
-    newStudent.userType = "student";
+    newStudent.userType = data.userType || 2;
     newStudent.status = "active";
     newStudent.createdAt = new Date();
     newStudent.updatedAt = new Date();
@@ -27,7 +25,7 @@ class StudentServices {
         let student = []
         querySnapshot.forEach((doc) => {
             let data = doc.data()
-            if (data.userType !== 'Admin') {
+            if (data.userType != 1 && data.userType !== "admin" && data.userType !== "Admin") {
                 student.push({ id: doc.id, ...data })
             }
         });

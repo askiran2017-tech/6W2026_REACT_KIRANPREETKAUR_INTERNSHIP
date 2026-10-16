@@ -19,6 +19,11 @@ export default function EditApplication() {
 
     async function updateApplication(e) {
         e.preventDefault()
+        if (!SubmissionUrl.trim()) {
+            toast.error("Submission URL is required");
+            return;
+        }
+
         try {
             let payload = {
                 userId: UserId,

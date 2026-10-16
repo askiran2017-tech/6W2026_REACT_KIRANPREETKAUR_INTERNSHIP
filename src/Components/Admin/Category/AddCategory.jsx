@@ -12,14 +12,30 @@ export default function AddCategory() {
 
     async function AddCategory(e) {
         e.preventDefault()
+        const trimmedName = CategoryName.trim();
+        const trimmedDesc = Description.trim();
+
+        if (!trimmedName) {
+            toast.error("Please enter category name");
+            return;
+        }
+        if (trimmedName.length < 2) {
+            toast.error("Category name must be at least 2 characters");
+            return;
+        }
+
+        if (!trimmedDesc) {
+            toast.error("Please enter category description");
+            return;
+        }
+
         try {
             let payload = {
-                name: CategoryName,
-                description:Description,
-                status:  "active",
-                createdAt:new Date(),
-                updatedAt:new Date()
-
+                name: trimmedName,
+                description: trimmedDesc,
+                status: "active",
+                createdAt: new Date(),
+                updatedAt: new Date()
             }
             console.log("Payload:", payload);
             await CategoryServices.add(payload)

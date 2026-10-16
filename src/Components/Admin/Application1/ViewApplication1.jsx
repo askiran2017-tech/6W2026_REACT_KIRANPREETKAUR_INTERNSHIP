@@ -113,61 +113,109 @@ export default function ViewApplication1() {
 
       <div className="container-fluid py-5">
         <div className="container py-5">
-          {loading ? (<RiseLoader color={"#0de114"} cssOverride={override} size={100} />) : (
-          <div className="table-responsive">
-            <table className="table table-bordered table-hover align-middle">
-              <thead className="table-dark">
-                <tr>
-                  <th scope="col">User</th>
-                  <th scope="col">Type / Title</th>
-                  <th scope="col">Submission URL</th>
-                  <th scope="col">Interview</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Application.map((app) => (
-                  <tr key={app.id}>
-                    <td><small>{users.find(u => u.id === app.userId)?.name || app.userId}</small></td>
-                    <td>
-                      {app.internshipId ? (
-                         <span className="badge bg-success">Internship: {internships.find(i => i.id === app.internshipId)?.title || app.internshipId}</span>
-                      ) : (
-                         <span className="badge bg-warning text-dark">Hackathon: {hackathons.find(h => h.id === app.hackathonId)?.title || app.hackathonId}</span>
-                      )}
-                    </td>
-                    <td>
-                      {app.submissionUrl ? (
-                         <a href={app.submissionUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">View</a>
-                      ) : "N/A"}
-                    </td>
-                    <td>
-                      {app.interviewDate ? (
-                          <div>
-                              <strong>Date:</strong> {app.interviewDate}<br/>
-                              <strong>Time:</strong> {app.interviewTime}
-                          </div>
-                      ) : "Not Scheduled"}
-                    </td>
-                    <td>
-                      <span className={`badge ${app.applicationStatus === 'Approved' ? 'bg-success' : app.applicationStatus === 'Rejected' ? 'bg-danger' : 'bg-secondary'}`}>
-                          {app.applicationStatus || 'Pending'}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="d-flex flex-column gap-2">
-                          <button className="btn btn-sm btn-success" onClick={() => updateStatus(app.id, 'Approved')}>Approve</button>
-                          <button className="btn btn-sm btn-danger" onClick={() => updateStatus(app.id, 'Rejected')}>Reject</button>
-                          <button className="btn btn-sm btn-info text-white" onClick={() => scheduleInterview(app.id)}>Schedule Interview</button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={() => deleteApplication(app.id)}>Delete</button>
-                      </div>
-                    </td>
+          {loading ? (
+            <RiseLoader color={"#0de114"} cssOverride={override} size={15} />
+          ) : (
+            <div className="table-responsive">
+              <table className="table table-bordered table-hover align-middle">
+                <thead className="table-dark">
+                  <tr>
+                    <th scope="col">User</th>
+                    <th scope="col">Type / Title</th>
+                    <th scope="col">Submission URL</th>
+                    <th scope="col">Interview</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>)}
+                </thead>
+                <tbody>
+                  {Application.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4">
+                        No applications found.
+                      </td>
+                    </tr>
+                  ) : (
+                    Application.map((app) => (
+                      <tr key={app.id}>
+                        <td>
+                          <small>
+                            {users.find((u) => u.id === app.userId)?.name || app.userId}
+                          </small>
+                        </td>
+                        <td>
+                          {app.internshipId ? (
+                            <span className="badge bg-success">
+                              Internship: {internships.find((i) => i.id === app.internshipId)?.title || app.internshipId}
+                            </span>
+                          ) : (
+                            <span className="badge bg-warning text-dark">
+                              Hackathon: {hackathons.find((h) => h.id === app.hackathonId)?.title || app.hackathonId}
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {app.submissionUrl ? (
+                            <a
+                              href={app.submissionUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-sm btn-outline-primary"
+                            >
+                              View
+                            </a>
+                          ) : (
+                            "N/A"
+                          )}
+                        </td>
+                        <td>
+                          {app.interviewDate ? (
+                            <div>
+                              <strong>Date:</strong> {app.interviewDate}<br />
+                              <strong>Time:</strong> {app.interviewTime}
+                            </div>
+                          ) : (
+                            "Not Scheduled"
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              app.applicationStatus === "Approved"
+                                ? "bg-success"
+                                : app.applicationStatus === "Rejected"
+                                ? "bg-danger"
+                                : app.applicationStatus === "Interview Scheduled"
+                                ? "bg-info text-dark"
+                                : "bg-secondary"
+                            }`}
+                          >
+                            {app.applicationStatus || "Pending"}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="d-flex flex-column gap-2">
+                            <button className="btn btn-sm btn-success" onClick={() => updateStatus(app.id, "Approved")}>
+                              Approve
+                            </button>
+                            <button className="btn btn-sm btn-danger" onClick={() => updateStatus(app.id, "Rejected")}>
+                              Reject
+                            </button>
+                            <button className="btn btn-sm btn-info text-white" onClick={() => scheduleInterview(app.id)}>
+                              Schedule Interview
+                            </button>
+                            <button className="btn btn-sm btn-outline-danger" onClick={() => deleteApplication(app.id)}>
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </>

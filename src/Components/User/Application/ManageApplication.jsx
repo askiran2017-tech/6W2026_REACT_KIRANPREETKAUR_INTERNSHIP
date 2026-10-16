@@ -20,6 +20,14 @@ export default function ManageApplication() {
   const [hackathons, setHackathons] = useState([])
   let [loading, setLoading] = useState(false)
 
+  function formatDate(dateVal) {
+    if (!dateVal) return "-";
+    if (dateVal.toDate) {
+      return dateVal.toDate().toLocaleDateString();
+    }
+    return new Date(dateVal).toLocaleDateString();
+  }
+
   async function getApplication() {
       try {
           setLoading(true);
@@ -93,63 +101,113 @@ export default function ManageApplication() {
 
       <div className="container-fluid py-5">
         <div className="container py-5">
-          {loading ? (<RingLoader color={"#0de114"} cssOverride={override} size={100} />) : (
-          <div className="table-responsive">
-            <table className="table table-bordered table-hover align-middle">
-              <thead className="table-dark">
-                <tr>
-                  <th scope="col">Type / Title</th>
-                  <th scope="col">Submission URL</th>
-                  <th scope="col">Interview</th>
-                  <th scope="col">Status</th>
-                  <th scope="col">Date</th>
-                  <th scope="col">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Application.map((app) => (
-                  <tr key={app.id}>
-                    <td>
-                      {app.internshipId ? (
-                         <span className="badge bg-success">Internship: {internships.find(i => i.id === app.internshipId)?.title || app.internshipId}</span>
-                      ) : (
-                         <span className="badge bg-warning text-dark">Hackathon: {hackathons.find(h => h.id === app.hackathonId)?.title || app.hackathonId}</span>
-                      )}
-                    </td>
-                    <td>
-                      {app.submissionUrl ? (
-                         <a href={app.submissionUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">View Submitted Link</a>
-                      ) : (
-                         <button className="btn btn-sm btn-info text-white" onClick={() => submitProject(app.id)}>Submit Link</button>
-                      )}
-                    </td>
-                    <td>
-                      {app.interviewDate ? (
-                          <div>
-                              <strong>Date:</strong> {app.interviewDate}<br/>
-                              <strong>Time:</strong> {app.interviewTime}
-                          </div>
-                      ) : "Not Scheduled"}
-                    </td>
-                    <td>
-                      <span className={`badge ${app.applicationStatus === 'Approved' ? 'bg-success' : app.applicationStatus === 'Rejected' ? 'bg-danger' : 'bg-secondary'}`}>
-                          {app.applicationStatus || 'Pending'}
-                      </span>
-                    </td>
-                    <td>
-                      <small>Applied: {app.createdAt?.toDate().toLocaleDateString()}</small><br/>
-                      <small>Updated: {app.updatedAt?.toDate().toLocaleDateString()}</small>
-                    </td>
-                    <td>
-                      <button className="btn btn-sm btn-outline-danger" onClick={() => deleteApplication(app.id)}>
-                        Cancel
-                      </button>
-                    </td>
+          {loading ? (
+            <RingLoader color={"#0de114"} cssOverride={override} size={25} />
+          ) : (
+            <div className="table-responsive">
+              <table className="table table-bordered table-hover align-middle">
+                <thead className="table-dark">
+                  <tr>
+                    <th scope="col">Type / Title</th>
+                    <th scope="col">Submission URL</th>
+                    <th scope="col">Interview</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>)}
+                </thead>
+                <tbody>
+                  {Application.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="text-center py-4">
+                        No applications found.
+                      </td>
+                    </tr>
+                  ) : (
+                    Application.map((app) => (
+                      <tr key={app.id}>
+                        <td>
+                          {app.internshipId ? (
+                            <span className="badge bg-success">
+                              Internship: {internships.find((i) => i.id === app.internshipId)?.title || app.internshipId}
+                            </span>
+                          ) : (
+                            <span className="badge bg-warning text-dark">
+                              Hackathon: {hackathons.find((h) => h.id === app.hackathonId)?.title || app.hackathonId}
+                            </span>
+                          )}
+                        </td>
+                        <td>
+                          {app.submissionUrl ? (
+                            <div className="d-flex align-items-center gap-2">
+                              <a
+                                href={app.submissionUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="btn btn-sm btn-outline-primary"
+                              >
+                                View Link
+                              </a>
+                              <button
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={() => submitProject(app.id)}
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="btn btn-sm btn-info text-white"
+                              onClick={() => submitProject(app.id)}
+                            >
+                              Submit Link
+                            </button>
+                          )}
+                        </td>
+                        <td>
+                          {app.interviewDate ? (
+                            <div>
+                              <strong>Date:</strong> {app.interviewDate}<br />
+                              <strong>Time:</strong> {app.interviewTime}
+                            </div>
+                          ) : (
+                            "Not Scheduled"
+                          )}
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              app.applicationStatus === "Approved"
+                                ? "bg-success"
+                                : app.applicationStatus === "Rejected"
+                                ? "bg-danger"
+                                : app.applicationStatus === "Interview Scheduled"
+                                ? "bg-info text-dark"
+                                : "bg-warning text-dark"
+                            }`}
+                          >
+                            {app.applicationStatus || "Pending"}
+                          </span>
+                        </td>
+                        <td>
+                          <small>Applied: {formatDate(app.createdAt)}</small><br />
+                          <small>Updated: {formatDate(app.updatedAt)}</small>
+                        </td>
+                        <td>
+                          <button
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => deleteApplication(app.id)}
+                          >
+                            Cancel
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </>

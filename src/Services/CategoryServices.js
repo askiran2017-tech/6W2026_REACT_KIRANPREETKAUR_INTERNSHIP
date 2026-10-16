@@ -1,8 +1,7 @@
 import { addDoc, collection, getDocs, getDoc, updateDoc,doc, deleteDoc } from "firebase/firestore";
 import CategoryModel from "../Model/CategoryModel";
 import { db } from "../Firebase/FirebaseConfig";
-import { useEffect } from "react";
-import { toast } from "react-toastify";
+
 class CategoryServices {
    async add(data) {
     let newCategory = new CategoryModel();
@@ -22,8 +21,6 @@ class CategoryServices {
         let Category = []
         querySnapshot.forEach((doc) => {
             Category.push({ id: doc.id, ...doc.data() })
-
-            // doc.data() is never undefined for query doc snapshots
         });
         return Category
     }
@@ -35,7 +32,6 @@ class CategoryServices {
             console.log("Document data:", docSnap.data());
             return { id: docSnap.id, ...docSnap.data() }
         } else {
-            // docSnap.data() will be undefined in this case
             console.log("No such document!");
             return false;
         }

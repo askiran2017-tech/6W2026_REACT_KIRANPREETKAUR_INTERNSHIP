@@ -38,20 +38,48 @@ export default function EditInternship() {
 
     async function updateInternship(e) {
         e.preventDefault()
+        if (!CategoryId) {
+            toast.error("Please select a category");
+            return;
+        }
+        if (!CompanyName.trim()) {
+            toast.error("Please enter company name");
+            return;
+        }
+        if (!Title.trim()) {
+            toast.error("Please enter internship title");
+            return;
+        }
+        if (!Duration.trim()) {
+            toast.error("Please enter internship duration");
+            return;
+        }
+        if (!Stipend.trim()) {
+            toast.error("Please enter stipend amount");
+            return;
+        }
+        if (!Location.trim()) {
+            toast.error("Please enter location");
+            return;
+        }
+        if (!LastDate) {
+            toast.error("Please select last date to apply");
+            return;
+        }
+
         try {
             let payload = {
                 categoryId: CategoryId,
-                companyName: CompanyName,
-                title: Title,
-                description: Description,
-                duration: Duration,
-                stipend: Stipend,
-                location: Location,
+                companyName: CompanyName.trim(),
+                title: Title.trim(),
+                description: Description.trim(),
+                duration: Duration.trim(),
+                stipend: Stipend.trim(),
+                location: Location.trim(),
                 lastDate: LastDate,
                 status: "active",
                 createdAt: CreatedAt,
                 updatedAt: new Date()
-
             }
             console.log("Payload:", payload);
             await InternshipServices.update(params.id, payload)

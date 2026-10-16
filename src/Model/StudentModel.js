@@ -4,7 +4,7 @@ class StudentModel {
     phone = "";
     address = "";
     profileImage = "";
-    userType = "student";
+    userType = 2;
     status = "active";
     createdAt = "";
     updatedAt = "";

@@ -22,6 +22,12 @@ export default function ManageResult() {
     const [users, setUsers] = useState([]);
     const [internships, setInternships] = useState([]);
     const [hackathons, setHackathons] = useState([]);
+
+    function formatDate(dateVal) {
+        if (!dateVal) return "-";
+        if (dateVal.toDate) return dateVal.toDate().toLocaleDateString();
+        return new Date(dateVal).toLocaleDateString();
+    }
     
     async function getResult() {
         try {
@@ -112,13 +118,16 @@ export default function ManageResult() {
             </div>
             <div className="container-fluid py-5">
                 <div className="container py-5">
-                    {loading ? (<PacmanLoader
-                        color={"#0de114"}
-                        loading={loading}
-                        cssOverride={override}
-                        size={100}
-                        aria-label="Loading Spinner"
-                        data-testid="loader" />) : (
+                    {loading ? (
+                        <PacmanLoader
+                            color={"#0de114"}
+                            loading={loading}
+                            cssOverride={override}
+                            size={20}
+                            aria-label="Loading Spinner"
+                            data-testid="loader"
+                        />
+                    ) : (
                         <div className="table-responsive">
                             <table className="table">
                                 <thead>
@@ -132,58 +141,66 @@ export default function ManageResult() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {Result.map((Result, index) => (
-                                        <tr key={Result.id}>
-
-                                            <td>
-                                                <p className="mb-0 mt-4">{index + 1}</p>
-                                            </td>
-                                            <td>
-                                                <p className="mb-0 mt-4">
-                                                    {(() => {
-                                                        const app = applications.find(a => a.id === Result.applicationId);
-                                                        if (!app) return Result.applicationId;
-                                                        const userName = users.find(u => u.id === app.userId)?.name || "Unknown User";
-                                                        let programName = "";
-                                                        if (app.internshipId) {
-                                                            programName = "Internship: " + (internships.find(i => i.id === app.internshipId)?.title || "Unknown");
-                                                        } else if (app.hackathonId) {
-                                                            programName = "Hackathon: " + (hackathons.find(h => h.id === app.hackathonId)?.title || "Unknown");
-                                                        }
-                                                        return `${userName} - ${programName}`;
-                                                    })()}
-                                                </p>
-                                            </td>
-                                            <td>
-                                                <p className="mb-0 mt-4">{Result.result}</p>
-                                            </td>
-                                            <td>
-                                                <p className="mb-0 mt-4">{Result.remarks}</p>
-                                            </td>
-
-                                            <td>
-                                                <p className="mb-0 mt-4">
-                                                    {new Date(Result.publishedAt).toLocaleDateString()}
-                                                </p>
-                                            </td>
-                                            <td>
-                                                <Link to={`/Admin/Result/EditResult/${Result.id}`}>
-                                                    <button className="btn btn-md rounded-circle bg-light border mt-4">
-                                                        <i className="bi bi-pencil text-success" />
-                                                    </button>
-                                                </Link>
-                                                &nbsp;
-                                                <button className="btn btn-md rounded-circle bg-light border mt-4"
-                                                    onClick={() => deleteResult(Result.id)}>
-                                                    <i className="bi bi-trash text-danger" />
-                                                </button>
+                                    {Result.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="6" className="text-center py-4">
+                                                No results found.
                                             </td>
                                         </tr>
-
-                                    ))}
+                                    ) : (
+                                        Result.map((item, index) => (
+                                            <tr key={item.id}>
+                                                <td>
+                                                    <p className="mb-0 mt-4">{index + 1}</p>
+                                                </td>
+                                                <td>
+                                                    <p className="mb-0 mt-4">
+                                                        {(() => {
+                                                            const app = applications.find(a => a.id === item.applicationId);
+                                                            if (!app) return item.applicationId;
+                                                            const userName = users.find(u => u.id === app.userId)?.name || "Unknown User";
+                                                            let programName = "";
+                                                            if (app.internshipId) {
+                                                                programName = "Internship: " + (internships.find(i => i.id === app.internshipId)?.title || "Unknown");
+                                                            } else if (app.hackathonId) {
+                                                                programName = "Hackathon: " + (hackathons.find(h => h.id === app.hackathonId)?.title || "Unknown");
+                                                            }
+                                                            return `${userName} - ${programName}`;
+                                                        })()}
+                                                    </p>
+                                                </td>
+                                                <td>
+                                                    <p className="mb-0 mt-4">{item.result}</p>
+                                                </td>
+                                                <td>
+                                                    <p className="mb-0 mt-4">{item.remarks}</p>
+                                                </td>
+                                                <td>
+                                                    <p className="mb-0 mt-4">
+                                                        {formatDate(item.publishedAt)}
+                                                    </p>
+                                                </td>
+                                                <td>
+                                                    <Link to={`/Admin/Result/EditResult/${item.id}`}>
+                                                        <button className="btn btn-md rounded-circle bg-light border mt-4">
+                                                            <i className="bi bi-pencil text-success" />
+                                                        </button>
+                                                    </Link>
+                                                    &nbsp;
+                                                    <button
+                                                        className="btn btn-md rounded-circle bg-light border mt-4"
+                                                        onClick={() => deleteResult(item.id)}
+                                                    >
+                                                        <i className="bi bi-trash text-danger" />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
-                        </div>)}
+                        </div>
+                    )}
                 </div>
 
 

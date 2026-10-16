@@ -1,0 +1,23 @@
+.navbar .navbar-nav .nav-link {
+  white-space: nowrap !important;
+  font-size: 13.5px !important;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+@media (min-width: 992px) {
+  .navbar .navbar-nav .nav-link {
+    margin-right: 14px !important;
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  .navbar .navbar-nav .nav-link:last-child {
+    margin-right: 0 !important;
+  }
+}
+
+.navbar-brand h1,
+.navbar-brand h2 {
+  font-size: 24px !important;
+  letter-spacing: 0.5px;
+}

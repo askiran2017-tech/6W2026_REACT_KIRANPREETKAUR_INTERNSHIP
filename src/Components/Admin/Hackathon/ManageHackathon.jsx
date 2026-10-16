@@ -14,8 +14,17 @@ const override= {
 export default function ManageHackathon() {
   const [Hackathon, setHackathon] = useState([])
   const [categories, setCategories] = useState([])
-  let[loading,setLoading]=useState(false)
- async function getHackathon() {
+  let [loading, setLoading] = useState(false)
+
+  function formatDate(dateVal) {
+    if (!dateVal) return "-";
+    if (dateVal.toDate) {
+      return dateVal.toDate().toLocaleDateString();
+    }
+    return new Date(dateVal).toLocaleDateString();
+  }
+
+  async function getHackathon() {
    try {
      setLoading(true);
  
@@ -97,89 +106,99 @@ export default function ManageHackathon() {
 
       <div className="container-fluid py-5">
         <div className="container py-5">
-           {loading?(<BarLoader
-        color={"#0de114"}
-        loading={loading}
-        cssOverride={override}
-        size={150}
-        aria-label="Loading Spinner"
-        data-testid="loader"/>):(
-          <div className="table-responsive">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th scope="col">Sr.No.</th>
-                  <th scope="col">Category</th>
-                  <th scope="col">Title</th>
-                  <th scope="col">Description</th>
-                  <th scope="col">Venue</th>
-                  <th scope="col">EventDate</th>
-                  <th scope="col">LastDate</th>
-                  <th scope="col">Prize</th>
-                  <th scope="col">Date</th>
-                  <th scope="col">Actions</th>
-
-                </tr>
-              </thead>
-              <tbody>
-                {Hackathon.map((Hackathon, index) => (
-                  <tr key={Hackathon.id}>
-
-                    <td>
-                      <p className="mb-0 mt-4">{index + 1}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">
-                        {categories.find(c => c.id === Hackathon.categoryId)?.name || Hackathon.categoryId}
-                      </p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Hackathon.title}</p>
-                    </td>
-                    <td>
-                      <p
-                        className="mb-0 mt-4 text-truncate"
-                        style={{ maxWidth: "200px" }}
-                        title={Hackathon.description}
-                      >
-                        {Hackathon.description}
-                      </p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Hackathon.venue}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Hackathon.eventDate}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Hackathon.lastDate}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">₹{Hackathon.prize}</p>
-                    </td>
-                    <td>
-                      <p className="mb-0 mt-4">{Hackathon.createdAt.toDate().toLocaleDateString()}</p>
-                      <p className="mb-0 mt-4">{Hackathon.updatedAt.toDate().toLocaleDateString()}</p>
-                    </td>
-
-                    <td>
-                      <Link to={`/Admin/Hackathon/EditHackathon/${Hackathon.id}`}>
-                        <button className="btn btn-md rounded-circle bg-light border mt-4">
-                          <i className="bi bi-pencil text-success" />
-                        </button>
-                      </Link>
-                      &nbsp;
-                      <button className="btn btn-md rounded-circle bg-light border mt-4"
-                        onClick={() => deleteHackathon(Hackathon.id)}>
-                        <i className="bi bi-trash text-danger" />
-                      </button>
-                    </td>
+          {loading ? (
+            <BarLoader
+              color={"#0de114"}
+              loading={loading}
+              cssOverride={override}
+              width={150}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          ) : (
+            <div className="table-responsive">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Sr.No.</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Venue</th>
+                    <th scope="col">EventDate</th>
+                    <th scope="col">LastDate</th>
+                    <th scope="col">Prize</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Actions</th>
                   </tr>
-
-                ))}
-              </tbody>
-            </table>
-          </div>)}
+                </thead>
+                <tbody>
+                  {Hackathon.length === 0 ? (
+                    <tr>
+                      <td colSpan="10" className="text-center py-4">
+                        No hackathons found.
+                      </td>
+                    </tr>
+                  ) : (
+                    Hackathon.map((item, index) => (
+                      <tr key={item.id}>
+                        <td>
+                          <p className="mb-0 mt-4">{index + 1}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">
+                            {categories.find(c => c.id === item.categoryId)?.name || item.categoryId}
+                          </p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.title}</p>
+                        </td>
+                        <td>
+                          <p
+                            className="mb-0 mt-4 text-truncate"
+                            style={{ maxWidth: "200px" }}
+                            title={item.description}
+                          >
+                            {item.description}
+                          </p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.venue}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.eventDate}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.lastDate}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">₹{item.prize}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{formatDate(item.createdAt)}</p>
+                          <p className="mb-0 mt-4">{formatDate(item.updatedAt)}</p>
+                        </td>
+                        <td>
+                          <Link to={`/Admin/Hackathon/EditHackathon/${item.id}`}>
+                            <button className="btn btn-md rounded-circle bg-light border mt-4">
+                              <i className="bi bi-pencil text-success" />
+                            </button>
+                          </Link>
+                          &nbsp;
+                          <button
+                            className="btn btn-md rounded-circle bg-light border mt-4"
+                            onClick={() => deleteHackathon(item.id)}
+                          >
+                            <i className="bi bi-trash text-danger" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
 
         </div>
       </div>

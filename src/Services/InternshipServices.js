@@ -28,8 +28,6 @@ class InternshipServices {
         let Internship = []
         querySnapshot.forEach((doc) => {
             Internship.push({ id: doc.id, ...doc.data() })
-
-            // doc.data() is never undefined for query doc snapshots
         });
         return Internship
     }
@@ -41,7 +39,6 @@ class InternshipServices {
             console.log("Document data:", docSnap.data());
             return { id: docSnap.id, ...docSnap.data() }
         } else {
-            // docSnap.data() will be undefined in this case
             console.log("No such document!");
             return false;
         }

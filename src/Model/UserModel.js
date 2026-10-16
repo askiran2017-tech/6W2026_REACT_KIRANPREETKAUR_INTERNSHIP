@@ -1,11 +1,14 @@
-export default class UserModel{
-    id=""
-    name=""
-    email=""
-    password=""
-    contact=""
-    profileImage=""
-    userType=2
-    status="true"
-    createdAt=Date.now()
+export default class UserModel {
+    id = "";
+    name = "";
+    email = "";
+    password = "";
+    contact = "";
+    phone = "";
+    address = "";
+    profileImage = "";
+    userType = 2;
+    status = "active";
+    createdAt = new Date();
+    updatedAt = new Date();
 }

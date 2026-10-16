@@ -14,10 +14,16 @@ const override= {
 
 export default function ManageInternship() {
   let [loading, setLoading] = useState(false);
-  
-
   const [Internship, setInternship] = useState([])
   const [categories, setCategories] = useState([])
+
+  function formatDate(dateVal) {
+    if (!dateVal) return "-";
+    if (dateVal.toDate) {
+      return dateVal.toDate().toLocaleDateString();
+    }
+    return new Date(dateVal).toLocaleDateString();
+  }
   
   async function getInternship() {
   try {
@@ -101,14 +107,16 @@ export default function ManageInternship() {
       </div>
       <div className="container-fluid py-5">
         <div className="container py-5">
-          {loading?(<BounceLoader
-        color={"#0de114"}
-        loading={loading}
-        cssOverride={override}
-        size={150}
-        aria-label="Loading Spinner"
-        data-testid="loader"/>):(
-      
+          {loading ? (
+            <BounceLoader
+              color={"#0de114"}
+              loading={loading}
+              cssOverride={override}
+              size={25}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          ) : (
             <div className="table-responsive">
               <table className="table">
                 <thead>
@@ -124,71 +132,78 @@ export default function ManageInternship() {
                     <th scope="col">LastDate</th>
                     <th scope="col">Date</th>
                     <th scope="col">Actions</th>
-
                   </tr>
                 </thead>
                 <tbody>
-                  {Internship.map((Internship, index) => (
-                    <tr key={Internship.id}>
-
-                      <td>
-                        <p className="mb-0 mt-4">{index + 1}</p>
-                      </td>
-                      <td>
-                        <p className="mb-0 mt-4">
-                          {categories.find(c => c.id === Internship.categoryId)?.name || Internship.categoryId}
-                        </p>
-                      </td>
-                      <td>
-                        <p className="mb-0 mt-4">{Internship.companyName}</p>
-                      </td>
-                      <td>
-                        <p className="mb-0 mt-4">{Internship.title}</p>
-                      </td>
-                      <td>
-                      <p
-                        className="mb-0 mt-4 text-truncate"
-                        style={{ maxWidth: "200px" }}
-                        title={Internship.description}
-                      >
-                        {Internship.description}
-                      </p>
-                    </td>
-                      <td>
-                        <p className="mb-0 mt-4">{Internship.duration}</p>
-                      </td>
-                      <td>
-                        <p className="mb-0 mt-4">₹{Internship.stipend}</p>
-                      </td>
-                      <td>
-                        <p className="mb-0 mt-4">{Internship.location}</p>
-                      </td>
-                      <td>
-                        <p className="mb-0 mt-4">{Internship.lastDate}</p>
-                      </td>
-                      <td>
-                        <p className="mb-0 mt-4">{Internship.createdAt.toDate().toLocaleDateString()}</p>
-                        <p className="mb-0 mt-4">{Internship.updatedAt.toDate().toLocaleDateString()}</p>
-                      </td>
-
-                      <td>
-                        <Link to={`/Admin/Internship/EditInternship/${Internship.id}`}>
-                          <button className="btn btn-md rounded-circle bg-light border mt-4">
-                            <i className="bi bi-pencil text-success" />
-                          </button>
-                        </Link>
-                        &nbsp;
-                        <button className="btn btn-md rounded-circle bg-light border mt-4"
-                          onClick={() => deleteInternship(Internship.id)}>
-                          <i className="bi bi-trash text-danger" />
-                        </button>
+                  {Internship.length === 0 ? (
+                    <tr>
+                      <td colSpan="11" className="text-center py-4">
+                        No internships found.
                       </td>
                     </tr>
-
-                  ))}
+                  ) : (
+                    Internship.map((item, index) => (
+                      <tr key={item.id}>
+                        <td>
+                          <p className="mb-0 mt-4">{index + 1}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">
+                            {categories.find(c => c.id === item.categoryId)?.name || item.categoryId}
+                          </p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.companyName}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.title}</p>
+                        </td>
+                        <td>
+                          <p
+                            className="mb-0 mt-4 text-truncate"
+                            style={{ maxWidth: "200px" }}
+                            title={item.description}
+                          >
+                            {item.description}
+                          </p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.duration}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">₹{item.stipend}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.location}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{item.lastDate}</p>
+                        </td>
+                        <td>
+                          <p className="mb-0 mt-4">{formatDate(item.createdAt)}</p>
+                          <p className="mb-0 mt-4">{formatDate(item.updatedAt)}</p>
+                        </td>
+                        <td>
+                          <Link to={`/Admin/Internship/EditInternship/${item.id}`}>
+                            <button className="btn btn-md rounded-circle bg-light border mt-4">
+                              <i className="bi bi-pencil text-success" />
+                            </button>
+                          </Link>
+                          &nbsp;
+                          <button
+                            className="btn btn-md rounded-circle bg-light border mt-4"
+                            onClick={() => deleteInternship(item.id)}
+                          >
+                            <i className="bi bi-trash text-danger" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-            </div>)}
+            </div>
+          )}
           </div>
 
         </div>

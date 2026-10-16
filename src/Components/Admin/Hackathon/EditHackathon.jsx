@@ -36,19 +36,47 @@ export default function EditHackathon() {
 
     async function updateHackathon(e) {
         e.preventDefault()
+        if (!CategoryId) {
+            toast.error("Please select a category");
+            return;
+        }
+        if (!Title.trim()) {
+            toast.error("Please enter hackathon title");
+            return;
+        }
+        if (!Description.trim()) {
+            toast.error("Please enter description");
+            return;
+        }
+        if (!Venue.trim()) {
+            toast.error("Please enter venue");
+            return;
+        }
+        if (!EventDate) {
+            toast.error("Please select event date");
+            return;
+        }
+        if (!LastDate) {
+            toast.error("Please select last date to apply");
+            return;
+        }
+        if (!Prize.trim()) {
+            toast.error("Please enter prize details");
+            return;
+        }
+
         try {
             let payload = {
                 categoryId: CategoryId,
-                title: Title,
-                description: Description,
-                venue: Venue,
+                title: Title.trim(),
+                description: Description.trim(),
+                venue: Venue.trim(),
                 eventDate: EventDate,
                 lastDate: LastDate,
-                prize: Prize,
+                prize: Prize.trim(),
                 status: "active",
-                createdAt:CreatedAt,
+                createdAt: CreatedAt,
                 updatedAt: new Date()
-
             }
             console.log("Payload:", payload);
             await HackathonServices.update(params.id, payload)

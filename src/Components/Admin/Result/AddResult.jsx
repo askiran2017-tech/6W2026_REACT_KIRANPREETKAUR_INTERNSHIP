@@ -43,13 +43,25 @@ export default function AddResult() {
 
     async function AddResult(e) {
         e.preventDefault()
+        if (!ApplicationId) {
+            toast.error("Please select an application");
+            return;
+        }
+        if (!Result.trim()) {
+            toast.error("Please enter result status");
+            return;
+        }
+        if (!PublishedAt) {
+            toast.error("Please select published date");
+            return;
+        }
+
         try {
             let payload = {
                 applicationId: ApplicationId,
-                result: Result,
-                remarks: Remarks,
+                result: Result.trim(),
+                remarks: Remarks.trim(),
                 publishedAt: PublishedAt
-
             }
             console.log("Payload:", payload);
             await ResultServices.add(payload)

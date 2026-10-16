@@ -1,33 +1,32 @@
 import { useEffect } from "react";
 import AdminFooter from "./AdminFooter";
 import AdminHeader from "./AdminHeader";
-import {Outlet,useNavigate}from 'react-router-dom'
+import { Outlet, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthServices from "../../../Services/AuthServices";
-export default function AdminLayout(){
+
+export default function AdminLayout() {
     const nav = useNavigate();
-    function getUserType(){
-        const res=AuthServices.getUserType()
-        return res;
-    }
-    function getEmail(){
-        const res=AuthServices.getEmail()
-        return res;
-    }
+
     useEffect(() => {
-const email=getEmail()
-        const UserType=getUserType()
-        if (UserType!=='admin'||email==null){
-            toast.error('unauthorized')
-        nav('/')}
-}, []);
-        
-    
-    return(
+        const isLoggedIn = AuthServices.isLoggedIn();
+        const isAdmin = AuthServices.isAdmin();
+
+        if (!isLoggedIn || !isAdmin) {
+            toast.error("Unauthorized! Admin access only.");
+            nav("/");
+        }
+    }, [nav]);
+
+    if (!AuthServices.isAdmin()) {
+        return null;
+    }
+
+    return (
         <>
-        <AdminHeader/>
-        <Outlet/>
-        <AdminFooter/>
+            <AdminHeader />
+            <Outlet />
+            <AdminFooter />
         </>
-    )
+    );
 }

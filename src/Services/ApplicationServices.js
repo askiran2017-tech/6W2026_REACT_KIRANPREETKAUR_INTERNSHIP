@@ -28,8 +28,6 @@ class ApplicationServices {
         let Application = []
         querySnapshot.forEach((doc) => {
             Application.push({ id: doc.id, ...doc.data() })
-
-            // doc.data() is never undefined for query doc snapshots
         });
         return Application
     }
@@ -41,7 +39,6 @@ class ApplicationServices {
             console.log("Document data:", docSnap.data());
             return { id: docSnap.id, ...docSnap.data() }
         } else {
-            // docSnap.data() will be undefined in this case
             console.log("No such document!");
             return false;
         }

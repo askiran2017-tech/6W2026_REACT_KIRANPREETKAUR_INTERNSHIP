@@ -27,8 +27,6 @@ class HackathonServices {
         let Hackathon = []
         querySnapshot.forEach((doc) => {
             Hackathon.push({ id: doc.id, ...doc.data() })
-
-            // doc.data() is never undefined for query doc snapshots
         });
         return Hackathon
     }
@@ -40,7 +38,6 @@ class HackathonServices {
             console.log("Document data:", docSnap.data());
             return { id: docSnap.id, ...docSnap.data() }
         } else {
-            // docSnap.data() will be undefined in this case
             console.log("No such document!");
             return false;
         }

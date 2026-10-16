@@ -16,16 +16,27 @@ export default function Profile() {
     useEffect(() => {
         async function fetchProfile() {
             try {
+                const uid = AuthServices.getId();
                 const email = AuthServices.getEmail();
-                if (!email) return;
-                
-                const allStudents = await StudentServices.all();
-                const currentStudent = allStudents.find(s => s.email === email);
+                if (!uid && !email) return;
+
+                let currentStudent = null;
+                if (uid) {
+                    const studentDoc = await StudentServices.single(uid);
+                    if (studentDoc) {
+                        currentStudent = studentDoc;
+                    }
+                }
+
+                if (!currentStudent && email) {
+                    const allStudents = await StudentServices.all();
+                    currentStudent = allStudents.find(s => s.email === email);
+                }
                 
                 if (currentStudent) {
                     setStudentData(currentStudent);
                     setName(currentStudent.name || "");
-                    setPhone(currentStudent.phone || "");
+                    setPhone(currentStudent.phone || currentStudent.contact || "");
                     setAddress(currentStudent.address || "");
                     setPreviewImage(currentStudent.profileImage || "");
                 }
@@ -46,6 +57,33 @@ export default function Profile() {
 
     const updateProfile = async (e) => {
         e.preventDefault();
+        const trimmedName = name.trim();
+        const trimmedPhone = phone.toString().trim();
+        const trimmedAddress = address.trim();
+
+        if (!trimmedName) {
+            toast.error("Please enter your name");
+            return;
+        }
+        if (trimmedName.length < 3) {
+            toast.error("Name must be at least 3 characters");
+            return;
+        }
+
+        if (!trimmedPhone) {
+            toast.error("Please enter your phone number");
+            return;
+        }
+        if (!/^\d{10}$/.test(trimmedPhone)) {
+            toast.error("Phone number must be a valid 10-digit number");
+            return;
+        }
+
+        if (!trimmedAddress) {
+            toast.error("Please enter your address");
+            return;
+        }
+
         setLoading(true);
         try {
             let imageUrl = previewImage;
@@ -54,9 +92,10 @@ export default function Profile() {
             }
 
             const payload = {
-                name,
-                phone,
-                address,
+                name: trimmedName,
+                phone: trimmedPhone,
+                contact: trimmedPhone,
+                address: trimmedAddress,
                 profileImage: imageUrl,
                 updatedAt: new Date()
             };

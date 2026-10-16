@@ -16,6 +16,15 @@ export default function AddApplication() {
 
     async function AddApplication(e) {
         e.preventDefault()
+        if (!InternshipId && !HackathonId) {
+            toast.error("Please select an internship or hackathon");
+            return;
+        }
+        if (!SubmissionUrl.trim()) {
+            toast.error("Submission URL is required");
+            return;
+        }
+
         try {
             let payload = {
                 userId: UserId,
